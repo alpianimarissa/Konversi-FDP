@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis Interaktif 30 Soal FDP - Kelas 4 SD</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Fredoka', 'cursive'],
+                    },
+                    colors: {
+                        brand: {
+                            blue: '#3B82F6',
+                            purple: '#8B5CF6',
+                            green: '#10B981',
+                            amber: '#F59E0B',
+                            pink: '#EC4899',
+                            bg: '#F0F9FF',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #F0F9FF;
+            font-family: 'Inter', sans-serif;
+        }
+        .font-display {
+            font-family: 'Fredoka', cursive;
+        }
+
+        /* Formating Pecahan Tegak (Stacked Fraction) */
+        .frac {
+            display: inline-flex;
+            flex-direction: column;
+            vertical-align: middle;
+            text-align: center;
+            font-weight: 700;
+            line-height: 1;
+            margin: 0 3px;
+        }
+        .frac .num {
+            border-bottom: 2px solid currentColor;
+            padding: 0 3px 2px 3px;
+            display: block;
+        }
+        .frac .den {
+            padding: 2px 3px 0 3px;
+            display: block;
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen pb-16">
+
+    <!-- Navigation / Header -->
+    <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-sky-100 shadow-sm">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-blue-200">
+                    <i class="fa-solid fa-graduation-cap text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-display text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                        Super Kuis FDP Interaktif
+                    </h1>
+                    <p class="text-xs text-slate-500 font-medium">30 Soal Konversi, Membandingkan & Soal Cerita • Kelas 4 SD</p>
+                </div>
+            </div>
+            
+            <!-- Quick Progress Counter -->
+            <div class="flex items-center space-x-3">
+                <div class="hidden sm:flex items-center space-x-1.5 bg-sky-50 border border-sky-200 px-3 py-1.5 rounded-xl">
+                    <i class="fa-solid fa-list-check text-sky-600 text-sm"></i>
+                    <span class="text-xs font-semibold text-sky-700">Terjawab:</span>
+                    <span id="answered-count" class="font-display font-bold text-sky-600 text-sm">0/30</span>
+                </div>
+                <div class="flex items-center space-x-1.5 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-xl">
+                    <i class="fa-solid fa-star text-amber-500 text-lg"></i>
+                    <span class="text-xs font-semibold text-amber-700">Skor:</span>
+                    <span id="score-count" class="font-display font-bold text-amber-600 text-base">0</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 pt-6 space-y-6">
+
+        <!-- Progress Bar Header -->
+        <div class="bg-white p-4 rounded-2xl border border-sky-100 shadow-sm space-y-2">
+            <div class="flex items-center justify-between text-xs font-bold text-slate-500">
+                <span id="progress-text">Soal 1 dari 30</span>
+                <span id="progress-percent">0% Selesai</span>
+            </div>
+            <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+                <div id="progress-bar" class="h-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-300" style="width: 3.33%"></div>
+            </div>
+        </div>
+
+        <!-- Filter / Quick Navigator Grid (1-30 Buttons) -->
+        <div class="bg-white p-4 rounded-2xl border border-sky-100 shadow-sm space-y-3">
+            <div class="flex items-center justify-between">
+                <h3 class="font-display font-bold text-slate-700 text-sm flex items-center">
+                    <i class="fa-solid fa-compass text-blue-500 mr-2"></i> Navigasi Nomor Soal
+                </h3>
+                <span class="text-[11px] text-slate-400">Klik angka untuk melompat ke soal</span>
+            </div>
+            <div id="nav-grid" class="grid grid-cols-6 sm:grid-cols-10 gap-1.5">
+                <!-- Buttons dynamically generated -->
+            </div>
+        </div>
+
+        <!-- MAIN QUESTION CARD CONTAINER -->
+        <div id="quiz-container" class="bg-white rounded-3xl p-6 sm:p-8 border border-sky-100 shadow-lg space-y-6 transition-all">
+            <!-- Question Content will be rendered dynamically by JavaScript -->
+        </div>
+
+        <!-- RESULT SUMMARY CARD (Hidden initially) -->
+        <div id="result-container" class="hidden bg-white rounded-3xl p-6 sm:p-8 border border-sky-100 shadow-xl space-y-6 text-center">
+            <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-tr from-amber-400 to-amber-200 text-amber-800 flex items-center justify-center text-4xl shadow-lg">
+                <i class="fa-solid fa-trophy"></i>
+            </div>
+            <div class="space-y-2">
+                <h2 class="font-display text-2xl sm:text-3xl font-bold text-slate-800">Kuis Selesai! Selamat! 🎉</h2>
+                <p id="result-badge" class="inline-block px-4 py-1.5 rounded-full text-xs font-bold bg-blue-100 text-blue-700">Master FDP Muda</p>
+            </div>
+
+            <div class="grid grid-cols-3 gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-200 max-w-md mx-auto">
+                <div>
+                    <span class="block text-xs text-slate-500 font-medium">Total Soal</span>
+                    <span class="font-display font-bold text-slate-700 text-xl">30</span>
+                </div>
+                <div>
+                    <span class="block text-xs text-slate-500 font-medium">Jawaban Benar</span>
+                    <span id="result-correct" class="font-display font-bold text-emerald-600 text-xl">0</span>
+                </div>
+                <div>
+                    <span class="block text-xs text-slate-500 font-medium">Nilai Akhir</span>
+                    <span id="result-score" class="font-display font-bold text-blue-600 text-2xl">0</span>
+                </div>
+            </div>
+
+            <div id="result-message" class="text-sm text-slate-600 max-w-lg mx-auto leading-relaxed"></div>
+
+            <div class="flex justify-center space-x-3 pt-2">
+                <button onclick="restartQuiz()" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm shadow-md transition flex items-center">
+                    <i class="fa-solid fa-rotate-left mr-2"></i> Coba Kuis Lagi
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // Database 30 Soal FDP Kelas 4 SD
+        const quizData = [
+            // Kategori 1: Konversi Dasar & Pasangan Sahabat (1-10)
+            {
+                id: 1,
+                category: "Konversi Pecahan ke Persen",
+                question: `Bentuk persen dari pecahan <span class="frac text-blue-600"><span class="num">1</span><span class="den">2</span></span> adalah...`,
+                options: ["20%", "25%", "50%", "100%"],
+                answer: 2,
+                explanation: `Setengah (1/2) dari 100% adalah 50%.<br>Cara hitung: <sup>1</sup>/<sub>2</sub> × <sup>50</sup>/<sub>50</sub> = <sup>50</sup>/<sub>100</sub> = <strong>50%</strong>.`
+            },
+            {
+                id: 2,
+                category: "Konversi Pecahan ke Desimal",
+                question: `Bentuk desimal dari pecahan <span class="frac text-blue-600"><span class="num">3</span><span class="den">5</span></span> adalah...`,
+                options: ["0,3", "0,5", "0,6", "0,75"],
+                answer: 2,
+                explanation: `Pasangan pengali 5 adalah 2 agar menjadi penyebut 10.<br><sup>3</sup>/<sub>5</sub> × <sup>2</sup>/<sub>2</sub> = <sup>6</sup>/<sub>10</sub> = <strong>0,6</strong>.`
+            },
+            {
+                id: 3,
+                category: "Konversi Persen ke Pecahan",
+                question: `Bentuk pecahan biasa paling sederhana dari <span class="text-purple-600 font-bold">75%</span> adalah...`,
+                options: [
+                    `<span class="frac"><span class="num">1</span><span class="den">4</span></span>`,
+                    `<span class="frac"><span class="num">1</span><span class="den">2</span></span>`,
+                    `<span class="frac"><span class="num">3</span><span class="den">4</span></span>`,
+                    `<span class="frac"><span class="num">7</span><span class="den">10</span></span>`
+                ],
+                answer: 2,
+                explanation: `75% = <sup>75</sup>/<sub>100</sub>.<br>Sederhanakan dengan membagi pembilang dan penyebut dengan 25: <sup>75 ÷ 25</sup>/<sub>100 ÷ 25</sub> = <strong>3/4</strong>.`
+            },
+            {
+                id: 4,
+                category: "Konversi Pecahan ke Desimal",
+                question: `Bentuk desimal dari pecahan <span class="frac text-blue-600"><span class="num">7</span><span class="den">10</span></span> adalah...`,
+                options: ["0,07", "0,7", "7,0", "0,77"],
+                answer: 1,
+                explanation: `Penyebut 10 berarti ada 1 angka di belakang koma.<br><sup>7</sup>/<sub>10</sub> = <strong>0,7</strong>.`
+            },
+            {
+                id: 5,
+                category: "Konversi Pecahan ke Persen",
+                question: `Pecahan <span class="frac text-blue-600"><span class="num">1</span><span class="den">4</span></span> setara dengan persen berapa?`,
+                options: ["14%", "20%", "25%", "40%"],
+                answer: 2,
+                explanation: `Pasangan pengali 4 adalah 25 agar jadi 100.<br><sup>1</sup>/<sub>4</sub> × <sup>25</sup>/<sub>25</sub> = <sup>25</sup>/<sub>100</sub> = <strong>25%</strong>.`
+            },
+            {
+                id: 6,
+                category: "Konversi Desimal ke Persen",
+                question: `Bentuk persen dari bilangan desimal <span class="text-emerald-600 font-bold">0,45</span> adalah...`,
+                options: ["4,5%", "45%", "0,45%", "450%"],
+                answer: 1,
+                explanation: `Geser koma 2 kali ke kanan (atau dikali 100%).<br>0,45 = <sup>45</sup>/<sub>100</sub> = <strong>45%</strong>.`
+            },
+            {
+                id: 7,
+                category: "Konversi Pecahan ke Desimal",
+                question: `Bentuk desimal dari pecahan <span class="frac text-blue-600"><span class="num">3</span><span class="den">4</span></span> adalah...`,
+                options: ["0,34", "0,43", "0,75", "0,80"],
+                answer: 2,
+                explanation: `<sup>3</sup>/<sub>4</sub> × <sup>25</sup>/<sub>25</sub> = <sup>75</sup>/<sub>100</sub> = <strong>0,75</strong>.`
+            },
+            {
+                id: 8,
+                category: "Konversi Persen ke Pecahan",
+                question: `Pecahan paling sederhana dari <span class="text-purple-600 font-bold">60%</span> adalah...`,
+                options: [
+                    `<span class="frac"><span class="num">3</span><span class="den">5</span></span>`,
+                    `<span class="frac"><span class="num">6</span><span class="den">10</span></span>`,
+                    `<span class="frac"><span class="num">2</span><span class="den">3</span></span>`,
+                    `<span class="frac"><span class="num">4</span><span class="den">5</span></span>`
+                ],
+                answer: 0,
+                explanation: `60% = <sup>60</sup>/<sub>100</sub>.<br>Bagi atas dan bawah dengan FPB yaitu 20: <sup>60 ÷ 20</sup>/<sub>100 ÷ 20</sub> = <strong>3/5</strong>.`
+            },
+            {
+                id: 9,
+                category: "Tantangan Pasangan 8",
+                question: `Bentuk desimal dari pecahan <span class="frac text-blue-600"><span class="num">1</span><span class="den">8</span></span> adalah...`,
+                options: ["0,18", "0,125", "0,8", "0,81"],
+                answer: 1,
+                explanation: `Ingat pasangan pengali istimewa: 8 × 125 = 1000.<br><sup>1</sup>/<sub>8</sub> × <sup>125</sup>/<sub>125</sub> = <sup>125</sup>/<sub>1000</sub> = <strong>0,125</strong>.`
+            },
+            {
+                id: 10,
+                category: "Konversi Desimal ke Persen",
+                question: `Nilai desimal <span class="text-emerald-600 font-bold">0,05</span> jika diubah ke persen menjadi...`,
+                options: ["0,5%", "5%", "50%", "500%"],
+                answer: 1,
+                explanation: `0,05 artinya 5 per 100 (dua angka di belakang koma).<br><sup>5</sup>/<sub>100</sub> = <strong>5%</strong>.`
+            },
+
+            // Kategori 2: Konversi Lanjutan (11-15)
+            {
+                id: 11,
+                category: "Konversi Pecahan ke Persen",
+                question: `Pecahan <span class="frac text-blue-600"><span class="num">4</span><span class="den">25</span></span> jika diubah ke persen adalah...`,
+                options: ["4%", "16%", "20%", "25%"],
+                answer: 1,
+                explanation: `Pasangan pengali 25 adalah 4 agar jadi 100.<br><sup>4</sup>/<sub>25</sub> × <sup>4</sup>/<sub>4</sub> = <sup>16</sup>/<sub>100</sub> = <strong>16%</strong>.`
+            },
+            {
+                id: 12,
+                category: "Konversi Pecahan ke Desimal",
+                question: `Bentuk desimal dari <span class="frac text-blue-600"><span class="num">9</span><span class="den">20</span></span> adalah...`,
+                options: ["0,09", "0,45", "0,9", "0,92"],
+                answer: 1,
+                explanation: `Pasangan pengali 20 adalah 5.<br><sup>9</sup>/<sub>20</sub> × <sup>5</sup>/<sub>5</sub> = <sup>45</sup>/<sub>100</sub> = <strong>0,45</strong>.`
+            },
+            {
+                id: 13,
+                category: "Konversi Persen ke Desimal",
+                question: `Bentuk desimal dari <span class="text-purple-600 font-bold">80%</span> adalah...`,
+                options: ["0,08", "0,8", "8,0", "0,88"],
+                answer: 1,
+                explanation: `80% = <sup>80</sup>/<sub>100</sub>.<br>Geser koma 2 kali ke kiri: 80% = 0,80 = <strong>0,8</strong>.`
+            },
+            {
+                id: 14,
+                category: "Konversi Desimal ke Pecahan",
+                question: `Bentuk pecahan paling sederhana dari desimal <span class="text-emerald-600 font-bold">0,35</span> adalah...`,
+                options: [
+                    `<span class="frac"><span class="num">35</span><span class="den">100</span></span>`,
+                    `<span class="frac"><span class="num">7</span><span class="den">20</span></span>`,
+                    `<span class="frac"><span class="num">7</span><span class="den">10</span></span>`,
+                    `<span class="frac"><span class="num">3</span><span class="den">5</span></span>`
+                ],
+                answer: 1,
+                explanation: `0,35 = <sup>35</sup>/<sub>100</sub>.<br>Bagi pembilang dan penyebut dengan 5: <sup>35 ÷ 5</sup>/<sub>100 ÷ 5</sub> = <strong>7/20</strong>.`
+            },
+            {
+                id: 15,
+                category: "Konversi Pecahan ke Persen",
+                question: `Bentuk persen dari pecahan <span class="frac text-blue-600"><span class="num">3</span><span class="den">8</span></span> adalah...`,
+                options: ["37,5%", "38%", "30%", "37%"],
+                answer: 0,
+                explanation: `Ingat 1/8 = 12,5%.<br>Maka 3/8 = 3 × 12,5% = <strong>37,5%</strong>.`
+            },
+
+            // Kategori 3: Membandingkan & Mengurutkan (16-20)
+            {
+                id: 16,
+                category: "Membandingkan FDP",
+                question: `Isilah titik-titik berikut: <span class="text-emerald-600 font-bold">0,6</span> ... <span class="text-purple-600 font-bold">55%</span>`,
+                options: ["<", ">", "=", "≤"],
+                answer: 1,
+                explanation: `Ubah desimal ke persen: 0,6 = 60%.<br>Karena 60% lebih besar dari 55%, maka 0,6 <strong>></strong> 55%.`
+            },
+            {
+                id: 17,
+                category: "Membandingkan FDP",
+                question: `Tanda pembanding yang tepat untuk <span class="frac text-blue-600"><span class="num">1</span><span class="den">4</span></span> ... <span class="text-emerald-600 font-bold">0,25</span> adalah...`,
+                options: ["<", ">", "=", "≠"],
+                answer: 2,
+                explanation: `1/4 jika diubah ke desimal adalah 0,25.<br>Jadi nilainya persis <strong>=</strong> (sama dengan).`
+            },
+            {
+                id: 18,
+                category: "Membandingkan Nilai Terbesar",
+                question: `Manakah bilangan di bawah ini yang nilainya <strong>PALING BESAR</strong>?`,
+                options: [
+                    "0,7",
+                    "65%",
+                    `<span class="frac"><span class="num">3</span><span class="den">5</span></span>`,
+                    `<span class="frac"><span class="num">1</span><span class="den">2</span></span>`
+                ],
+                answer: 0,
+                explanation: `Ubah semua ke bentuk persen untuk membandingkan:<br>• 0,7 = 70% (PALING BESAR)<br>• 65% = 65%<br>• 3/5 = 60%<br>• 1/2 = 50%`
+            },
+            {
+                id: 19,
+                category: "Mengurutkan FDP",
+                question: `Urutan bilangan <span class="font-bold text-slate-700">0,3</span> ; <span class="frac text-blue-600"><span class="num">1</span><span class="den">5</span></span> ; <span class="text-purple-600 font-bold">40%</span> dari yang <strong>TERKECIL</strong> adalah...`,
+                options: [
+                    `0,3 ; 40% ; <span class="frac"><span class="num">1</span><span class="den">5</span></span>`,
+                    `<span class="frac"><span class="num">1</span><span class="den">5</span></span> ; 0,3 ; 40%`,
+                    `40% ; 0,3 ; <span class="frac"><span class="num">1</span><span class="den">5</span></span>`,
+                    `<span class="frac"><span class="num">1</span><span class="den">5</span></span> ; 40% ; 0,3`
+                ],
+                answer: 1,
+                explanation: `Ubah semua ke persen:<br>• 1/5 = 20%<br>• 0,3 = 30%<br>• 40% = 40%<br>Urutan terkecil: <strong>1/5 ; 0,3 ; 40%</strong>.`
+            },
+            {
+                id: 20,
+                category: "Membandingkan FDP",
+                question: `Tanda pembanding yang tepat untuk <span class="frac text-blue-600"><span class="num">7</span><span class="den">10</span></span> ... <span class="text-purple-600 font-bold">75%</span> adalah...`,
+                options: ["<", ">", "=", "≥"],
+                answer: 0,
+                explanation: `7/10 = 70%.<br>Karena 70% lebih kecil dari 75%, maka 7/10 <strong><</strong> 75%.`
+            },
+
+            // Kategori 4: Soal Cerita / Aplikasi Kehidupan Nyata (21-30)
+            {
+                id: 21,
+                category: "Soal Cerita • Makanan",
+                question: `Ibu memotong kue pizza menjadi 8 bagian sama besar. Andi mengambil 2 potong. Berapa persen pizza yang diambil Andi?`,
+                options: ["20%", "25%", "40%", "50%"],
+                answer: 1,
+                explanation: `Bagian Andi = <sup>2</sup>/<sub>8</sub> = <sup>1</sup>/<sub>4</sub>.<br><sup>1</sup>/<sub>4</sub> dalam persen = <strong>25%</strong>.`
+            },
+            {
+                id: 22,
+                category: "Soal Cerita • Smartphone",
+                question: `Baterai ponsel Roni tersisa <span class="text-emerald-600 font-bold">0,4</span> bagian dari penuh. Berapa persen daya baterai Roni yang tersisa?`,
+                options: ["4%", "40%", "44%", "0,4%"],
+                answer: 1,
+                explanation: `0,4 = <sup>4</sup>/<sub>10</sub> = <sup>40</sup>/<sub>100</sub> = <strong>40%</strong>.`
+            },
+            {
+                id: 23,
+                category: "Soal Cerita • Belanja Diskon",
+                question: `Sebuah toko memberikan diskon <span class="text-purple-600 font-bold">30%</span> untuk sepatu sekolah. Bentuk pecahan biasa dari diskon tersebut adalah...`,
+                options: [
+                    `<span class="frac"><span class="num">3</span><span class="den">10</span></span>`,
+                    `<span class="frac"><span class="num">1</span><span class="den">3</span></span>`,
+                    `<span class="frac"><span class="num">3</span><span class="den">5</span></span>`,
+                    `<span class="frac"><span class="num">3</span><span class="den">100</span></span>`
+                ],
+                answer: 0,
+                explanation: `30% = <sup>30</sup>/<sub>100</sub>.<br>Coret nol pembilang dan penyebut (bagi 10) = <strong>3/10</strong>.`
+            },
+            {
+                id: 24,
+                category: "Soal Cerita • Tes Ujian",
+                question: `Dalam ujian matematika, Siti menjawab benar 18 dari 20 soal (<span class="frac text-blue-600"><span class="num">18</span><span class="den">20</span></span>). Berapa persentase nilai Siti?`,
+                options: ["80%", "85%", "90%", "95%"],
+                answer: 2,
+                explanation: `<sup>18</sup>/<sub>20</sub> × <sup>5</sup>/<sub>5</sub> = <sup>90</sup>/<sub>100</sub> = <strong>90%</strong>.`
+            },
+            {
+                id: 25,
+                category: "Soal Cerita • Volume Air",
+                question: `Botol minum Budi terisi air sebanyak <span class="text-emerald-600 font-bold">0,65 liter</span>. Jika dinyatakan dalam pecahan biasa sederhana, nilainya adalah...`,
+                options: [
+                    `<span class="frac"><span class="num">13</span><span class="den">20</span></span>`,
+                    `<span class="frac"><span class="num">65</span><span class="den">10</span></span>`,
+                    `<span class="frac"><span class="num">6</span><span class="den">5</span></span>`,
+                    `<span class="frac"><span class="num">13</span><span class="den">50</span></span>`
+                ],
+                answer: 0,
+                explanation: `0,65 = <sup>65</sup>/<sub>100</sub>.<br>Bagi atas dan bawah dengan 5: <sup>65 ÷ 5</sup>/<sub>100 ÷ 5</sub> = <strong>13/20</strong>.`
+            },
+            {
+                id: 26,
+                category: "Soal Cerita • Olahraga",
+                question: `Dari 100 siswa kelas 4, sebanyak 35 siswa menyukai basket. Bentuk desimal dari proporsi siswa yang menyukai basket adalah...`,
+                options: ["0,035", "0,35", "3,5", "35,0"],
+                answer: 1,
+                explanation: `35 siswa dari 100 = <sup>35</sup>/<sub>100</sub> = <strong>0,35</strong>.`
+            },
+            {
+                id: 27,
+                category: "Soal Cerita • Panen Semangka",
+                question: `Pak Doni menjual <span class="frac text-blue-600"><span class="num">1</span><span class="den">5</span></span> bagian hasil panennya ke pasar dan <span class="text-emerald-600 font-bold">0,4</span> bagian ke toko. Berapa TOTAL persen semangka yang dijual?`,
+                options: ["50%", "60%", "70%", "80%"],
+                answer: 1,
+                explanation: `Ubah keduanya ke persen:<br>• 1/5 = 20%<br>• 0,4 = 40%<br>Total = 20% + 40% = <strong>60%</strong>.`
+            },
+            {
+                id: 28,
+                category: "Identifikasi Kesetaraan Nilai",
+                question: `Manakah pasangan FDP di bawah ini yang <strong>TIDAK SETARA</strong> (salah)?`,
+                options: [
+                    `<span class="frac"><span class="num">1</span><span class="den">2</span></span> = 50% = 0,5`,
+                    `<span class="frac"><span class="num">2</span><span class="den">5</span></span> = 40% = 0,4`,
+                    `<span class="frac"><span class="num">3</span><span class="den">4</span></span> = 75% = 0,75`,
+                    `<span class="frac"><span class="num">1</span><span class="den">5</span></span> = 15% = 0,2`
+                ],
+                answer: 3,
+                explanation: `Pilihan D salah karena 1/5 sama dengan <strong>20%</strong>, bukan 15%.`
+            },
+            {
+                id: 29,
+                category: "Soal Cerita • Mengukur Pita",
+                question: `Dini punya pita <span class="text-emerald-600 font-bold">0,8 meter</span>. Lani punya pita <span class="frac text-blue-600"><span class="num">3</span><span class="den">4</span></span> meter. Pernyataan yang benar adalah...`,
+                options: [
+                    "Pita Dini lebih panjang dari pita Lani",
+                    "Pita Lani lebih panjang dari pita Dini",
+                    "Pita Dini dan Lani sama panjang",
+                    "Pita Lani dua kali pita Dini"
+                ],
+                answer: 0,
+                explanation: `Ubah ke bentuk desimal:<br>• Pita Dini = 0,8 meter (0,80 m)<br>• Pita Lani = 3/4 m = 0,75 meter<br>Karena 0,80 > 0,75, maka pita Dini lebih panjang.`
+            },
+            {
+                id: 30,
+                category: "Konversi Desimal ke Pecahan",
+                question: `Bentuk pecahan paling sederhana dari desimal <span class="text-emerald-600 font-bold">0,125</span> adalah...`,
+                options: [
+                    `<span class="frac"><span class="num">1</span><span class="den">8</span></span>`,
+                    `<span class="frac"><span class="num">1</span><span class="den">4</span></span>`,
+                    `<span class="frac"><span class="num">1</span><span class="den">25</span></span>`,
+                    `<span class="frac"><span class="num">12</span><span class="den">50</span></span>`
+                ],
+                answer: 0,
+                explanation: `0,125 = <sup>125</sup>/<sub>1000</sub>.<br>Bagi pembilang dan penyebut dengan 125: <sup>125 ÷ 125</sup>/<sub>1000 ÷ 125</sub> = <strong>1/8</strong>.`
+            }
+        ];
+
+        // Quiz State Management
+        let currentQuestionIdx = 0;
+        let userAnswers = new Array(quizData.length).fill(null);
+        let isAnswerSubmitted = new Array(quizData.length).fill(false);
+
+        // Elements
+        const quizContainer = document.getElementById('quiz-container');
+        const navGrid = document.getElementById('nav-grid');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        const progressPercent = document.getElementById('progress-percent');
+        const answeredCountEl = document.getElementById('answered-count');
+        const scoreCountEl = document.getElementById('score-count');
+        const resultContainer = document.getElementById('result-container');
+
+        // Render Nav Grid Buttons
+        function renderNavGrid() {
+            navGrid.innerHTML = '';
+            quizData.forEach((q, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `py-1.5 rounded-lg text-xs font-bold transition border ${getNavBtnStyle(idx)}`;
+                btn.textContent = idx + 1;
+                btn.onclick = () => jumpToQuestion(idx);
+                navGrid.appendChild(btn);
+            });
+        }
+
+        function getNavBtnStyle(idx) {
+            if (idx === currentQuestionIdx) {
+                return 'bg-blue-600 text-white border-blue-600 shadow-md ring-2 ring-blue-300';
+            }
+            if (userAnswers[idx] !== null) {
+                const isCorrect = userAnswers[idx] === quizData[idx].answer;
+                return isCorrect 
+                    ? 'bg-emerald-100 text-emerald-700 border-emerald-300' 
+                    : 'bg-rose-100 text-rose-700 border-rose-300';
+            }
+            return 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100';
+        }
+
+        // Render Current Question
+        function renderQuestion() {
+            const q = quizData[currentQuestionIdx];
+            const answered = userAnswers[currentQuestionIdx];
+            const hasSubmitted = isAnswerSubmitted[currentQuestionIdx];
+
+            let optionsHTML = '';
+            q.options.forEach((opt, optIdx) => {
+                let btnStyle = 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-sky-50 hover:border-sky-300';
+                let icon = `<span class="w-7 h-7 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-xs mr-3">${String.fromCharCode(65 + optIdx)}</span>`;
+                
+                if (hasSubmitted) {
+                    if (optIdx === q.answer) {
+                        btnStyle = 'bg-emerald-50 border-2 border-emerald-500 text-emerald-900 font-bold';
+                        icon = `<span class="w-7 h-7 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-xs mr-3"><i class="fa-solid fa-check"></i></span>`;
+                    } else if (optIdx === answered) {
+                        btnStyle = 'bg-rose-50 border-2 border-rose-500 text-rose-900 font-bold';
+                        icon = `<span class="w-7 h-7 rounded-full bg-rose-500 text-white flex items-center justify-center font-bold text-xs mr-3"><i class="fa-solid fa-xmark"></i></span>`;
+                    } else {
+                        btnStyle = 'bg-slate-50 border-slate-200 text-slate-400 opacity-60';
+                    }
+                } else if (answered === optIdx) {
+                    btnStyle = 'bg-blue-50 border-2 border-blue-500 text-blue-900 font-bold';
+                    icon = `<span class="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs mr-3">${String.fromCharCode(65 + optIdx)}</span>`;
+                }
+
+                optionsHTML += `
+                    <button onclick="selectOption(${optIdx})" ${hasSubmitted ? 'disabled' : ''} class="w-full text-left p-4 rounded-2xl border transition-all flex items-center ${btnStyle}">
+                        ${icon}
+                        <span class="text-sm sm:text-base flex-1">${opt}</span>
+                    </button>
+                `;
+            });
+
+            let explanationHTML = '';
+            if (hasSubmitted) {
+                const isCorrect = answered === q.answer;
+                explanationHTML = `
+                    <div class="p-4 rounded-2xl ${isCorrect ? 'bg-emerald-50 border border-emerald-200 text-emerald-900' : 'bg-rose-50 border border-rose-200 text-rose-900'} space-y-2 text-xs sm:text-sm">
+                        <div class="flex items-center font-bold ${isCorrect ? 'text-emerald-700' : 'text-rose-700'}">
+                            <i class="fa-solid ${isCorrect ? 'fa-circle-check text-emerald-500' : 'fa-circle-xmark text-rose-500'} text-lg mr-2"></i>
+                            ${isCorrect ? 'Jawabanmu Benar!' : 'Jawaban Kurang Tepat'}
+                        </div>
+                        <div class="pt-1 text-slate-700 leading-relaxed border-t border-slate-200/60">
+                            <strong>Pembahasan:</strong><br>${q.explanation}
+                        </div>
+                    </div>
+                `;
+            }
+
+            quizContainer.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-blue-600 bg-blue-100 px-3 py-1 rounded-full">
+                        <i class="fa-solid fa-tag mr-1"></i> ${q.category}
+                    </span>
+                    <span class="text-xs font-semibold text-slate-400">Nomor ${q.id} dari 30</span>
+                </div>
+
+                <h2 class="font-display text-lg sm:text-xl font-bold text-slate-800 leading-snug">
+                    ${q.question}
+                </h2>
+
+                <div class="space-y-3">
+                    ${optionsHTML}
+                </div>
+
+                ${explanationHTML}
+
+                <!-- Action Controls -->
+                <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+                    <button onclick="prevQuestion()" ${currentQuestionIdx === 0 ? 'disabled class="opacity-40 cursor-not-allowed px-4 py-2 bg-slate-100 text-slate-400 rounded-xl text-xs font-bold"' : 'class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center"'}>
+                        <i class="fa-solid fa-arrow-left mr-1.5"></i> Sebelumnya
+                    </button>
+
+                    <div class="flex space-x-2">
+                        ${!hasSubmitted ? `
+                            <button onclick="submitAnswer()" ${answered === null ? 'disabled class="opacity-50 cursor-not-allowed px-5 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold"' : 'class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md transition flex items-center"'}>
+                                <i class="fa-solid fa-paper-plane mr-1.5"></i> Periksa Jawaban
+                            </button>
+                        ` : ''}
+
+                        ${currentQuestionIdx < quizData.length - 1 ? `
+                            <button onclick="nextQuestion()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md transition flex items-center">
+                                Berikutnya <i class="fa-solid fa-arrow-right ml-1.5"></i>
+                            </button>
+                        ` : `
+                            <button onclick="finishQuiz()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md transition flex items-center">
+                                <i class="fa-solid fa-flag-checkered mr-1.5"></i> Selesai & Lihat Hasil
+                            </button>
+                        `}
+                    </div>
+                </div>
+            `;
+
+            updateStats();
+            renderNavGrid();
+        }
+
+        // Interactivity functions
+        function selectOption(optIdx) {
+            if (isAnswerSubmitted[currentQuestionIdx]) return;
+            userAnswers[currentQuestionIdx] = optIdx;
+            renderQuestion();
+        }
+
+        function submitAnswer() {
+            if (userAnswers[currentQuestionIdx] === null) return;
+            isAnswerSubmitted[currentQuestionIdx] = true;
+            renderQuestion();
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIdx < quizData.length - 1) {
+                currentQuestionIdx++;
+                renderQuestion();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIdx > 0) {
+                currentQuestionIdx--;
+                renderQuestion();
+            }
+        }
+
+        function jumpToQuestion(idx) {
+            currentQuestionIdx = idx;
+            renderQuestion();
+        }
+
+        function updateStats() {
+            const answeredCount = userAnswers.filter(a => a !== null).length;
+            const correctCount = userAnswers.filter((ans, i) => ans === quizData[i].answer).length;
+            const pct = Math.round(((currentQuestionIdx + 1) / quizData.length) * 100);
+
+            progressText.textContent = `Soal ${currentQuestionIdx + 1} dari ${quizData.length}`;
+            progressPercent.textContent = `${pct}% Selesai`;
+            progressBar.style.width = `${pct}%`;
+
+            answeredCountEl.textContent = `${answeredCount}/${quizData.length}`;
+            scoreCountEl.textContent = correctCount * 10;
+        }
+
+        function finishQuiz() {
+            const correctCount = userAnswers.filter((ans, i) => ans === quizData[i].answer).length;
+            const score = Math.round((correctCount / quizData.length) * 100);
+
+            quizContainer.classList.add('hidden');
+            resultContainer.classList.remove('hidden');
+
+            document.getElementById('result-correct').textContent = `${correctCount} / 30`;
+            document.getElementById('result-score').textContent = score;
+
+            const badgeEl = document.getElementById('result-badge');
+            const msgEl = document.getElementById('result-message');
+
+            if (score >= 90) {
+                badgeEl.textContent = "🏆 Bintang Matematika Super (Sangat Luar Biasa!)";
+                badgeEl.className = "inline-block px-4 py-1.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800";
+                msgEl.textContent = "Hebat sekali! Kamu sudah menguasai seluruh konsep pecahan, desimal, dan persen dengan sangat sempurna!";
+            } else if (score >= 70) {
+                badgeEl.textContent = "🌟 Master FDP Muda (Bagus Sekali)";
+                badgeEl.className = "inline-block px-4 py-1.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800";
+                msgEl.textContent = "Hasil yang sangat bagus! Kamu sudah memahami hampir seluruh trik konversi dan pembandingan FDP.";
+            } else if (score >= 50) {
+                badgeEl.textContent = "👍 Pejuang Matematika (Terus Berlatih)";
+                badgeEl.className = "inline-block px-4 py-1.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800";
+                msgEl.textContent = "Kerja bagus! Pelajari kembali beberapa soal yang belum tepat di modul pembahasan untuk memperkuat ingatanmu.";
+            } else {
+                badgeEl.textContent = "🌱 Pembelajar Semangat";
+                badgeEl.className = "inline-block px-4 py-1.5 rounded-full text-xs font-bold bg-slate-100 text-slate-800";
+                msgEl.textContent = "Jangan berkecil hati! Cobalah mengulangi modul rangkuman materi FDP dan ikuti kuis ini sekali lagi.";
+            }
+        }
+
+        function restartQuiz() {
+            currentQuestionIdx = 0;
+            userAnswers = new Array(quizData.length).fill(null);
+            isAnswerSubmitted = new Array(quizData.length).fill(false);
+            resultContainer.classList.add('hidden');
+            quizContainer.classList.remove('hidden');
+            renderQuestion();
+        }
+
+        // Initialize App
+        window.onload = function() {
+            renderQuestion();
+        };
+    </script>
+</body>
+</html>
